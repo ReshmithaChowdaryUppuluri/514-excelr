@@ -1,0 +1,250 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyM3p6smIHQm6woawMfRqPs6",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/ReshmithaChowdaryUppuluri/514-excelr/blob/main/13-02-2025\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install --upgrade scikit-learn"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "zS5JiQL-62Xd",
+        "outputId": "353ea2f3-6de0-492d-93f4-1431de63aff6"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: scikit-learn in /usr/local/lib/python3.11/dist-packages (1.6.1)\n",
+            "Requirement already satisfied: numpy>=1.19.5 in /usr/local/lib/python3.11/dist-packages (from scikit-learn) (1.26.4)\n",
+            "Requirement already satisfied: scipy>=1.6.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn) (1.13.1)\n",
+            "Requirement already satisfied: joblib>=1.2.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn) (1.4.2)\n",
+            "Requirement already satisfied: threadpoolctl>=3.1.0 in /usr/local/lib/python3.11/dist-packages (from scikit-learn) (3.5.0)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import nltk\n",
+        "import string\n",
+        "import numpy as np\n",
+        "from sklearn.feature_extraction.text import TfidfVectorizer\n",
+        "from sklearn.metrics.pairwise import cosine_similarity\n",
+        "from nltk.corpus import stopwords\n",
+        "from nltk.tokenize import word_tokenize\n",
+        "from nltk.stem import WordNetLemmatizer"
+      ],
+      "metadata": {
+        "id": "G4Suf92r7CBb"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "nltk.download('punkt')\n",
+        "nltk.download(\"punkt_tab\")\n",
+        "nltk.download('stopwords')\n",
+        "nltk.download('wordnet')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "HcstBhRv7mj0",
+        "outputId": "9aa5323f-1888-4ebb-80ce-f08dd59c4a5d"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "[nltk_data] Downloading package punkt to /root/nltk_data...\n",
+            "[nltk_data]   Unzipping tokenizers/punkt.zip.\n",
+            "[nltk_data] Downloading package punkt_tab to /root/nltk_data...\n",
+            "[nltk_data]   Unzipping tokenizers/punkt_tab.zip.\n",
+            "[nltk_data] Downloading package stopwords to /root/nltk_data...\n",
+            "[nltk_data]   Unzipping corpora/stopwords.zip.\n",
+            "[nltk_data] Downloading package wordnet to /root/nltk_data...\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "True"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 9
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def preprocess_text(text):\n",
+        "  tokenize=word_tokenize(text)\n",
+        "  tokenize=[word.lower() for word in tokenize]\n",
+        "  stop_words=set(stopwords.words(\"english\"))\n",
+        "  tokenize=[word for word in tokenize if word not in stop_words]\n",
+        "  lemmatizer=WordNetLemmatizer()\n",
+        "  tokenize=[lemmatizer.lemmatize(word) for word in tokenize]\n",
+        "  return \" \".join(tokenize)"
+      ],
+      "metadata": {
+        "id": "pRjRhR4U8NEr"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "review1='bujjithalliiiii nikosam'\n",
+        "review2='ne vechi unna'\n",
+        "a=preprocess_text(review1)\n",
+        "b=preprocess_text(review2)\n",
+        "print(a)\n",
+        "print(b)"
+      ],
+      "metadata": {
+        "id": "Xb7ICgDW8NLr",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "3f5b60e7-5a79-4318-9af5-7544595a352f"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "bujjithalliiiii nikosam\n",
+            "ne vechi unna\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "vectorizer=TfidfVectorizer()\n",
+        "vectors=vectorizer.fit_transform([a,b])\n",
+        "print(vectors.toarray())"
+      ],
+      "metadata": {
+        "id": "fJg1_LV88NOR",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "802d24c0-691d-4233-f46f-2d7457099718"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[[0.70710678 0.         0.70710678 0.         0.        ]\n",
+            " [0.         0.57735027 0.         0.57735027 0.57735027]]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "cosin_sim=cosine_similarity(vectors[0],vectors[1])[0][0]\n",
+        "print(round(cosin_sim,3))"
+      ],
+      "metadata": {
+        "id": "vknNIwqm8NRJ",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "faeafc9b-6dbd-44ea-8d37-fe6f57059be6"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "0.0\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "K0yAndmV8NTT"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "2LnnY7fr8NYZ"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "nqP_WIN98Nao"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "rUMOq-zb8NdB"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
